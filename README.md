@@ -557,4 +557,3 @@ MimeType=text/plain
 ```bash
 sudo update-desktop-database
 ```
-```
