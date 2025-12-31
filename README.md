@@ -1,5 +1,5 @@
 
-```markdown
+
 # Ultimate Linux Dev Setup Guide
 
 Tutorial instalasi environment programming di Linux (Ubuntu/Debian base). Tanpa Snapd, menggunakan repository resmi dan tarball installer.
