@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linux Dev Setup - Step by Step</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --sidebar-bg: #1e1e1e;
+            --text-color: #e0e0e0;
+            --accent-color: #3b82f6; /* Modern Blue */
+            --code-bg: #000000;
+            --border-color: #333;
+            --header-color: #ffffff;
+            --sub-header: #a0a0a0;
+            --copy-bg: #2d2d2d;
+            --copy-hover: #3b82f6;
+            --info-bg: #1a2e1a;
+            --info-border: #2e7d32;
+            --warn-bg: #2e1a1a;
+            --warn-border: #c62828;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+
+        /* Sidebar */
+        aside {
+            width: 280px;
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid var(--border-color);
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+        }
+
+        aside h2 {
+            color: var(--header-color);
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 10px;
+        }
+
+        .nav-search {
+            width: 100%;
+            padding: 10px;
+            background-color: #2a2a2a;
+            border: 1px solid var(--border-color);
+            color: white;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            font-family: inherit;
+        }
+
+        .nav-links { list-style: none; }
+        .nav-links li { margin-bottom: 4px; }
+        
+        .nav-links a {
+            text-decoration: none;
+            color: var(--sub-header);
+            display: block;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            background-color: #333;
+            color: white;
+            border-left: 3px solid var(--accent-color);
+        }
+
+        /* Main Content */
+        main {
+            margin-left: 280px;
+            padding: 40px;
+            width: calc(100% - 280px);
+            max-width: 1000px;
+        }
+
+        header { margin-bottom: 50px; border-bottom: 1px solid var(--border-color); padding-bottom: 20px; }
+        header h1 { color: var(--header-color); font-size: 2rem; margin-bottom: 10px; }
+        header p { color: #888; }
+
+        /* Section Styling */
+        section {
+            margin-bottom: 60px;
+            scroll-margin-top: 20px;
+        }
+
+        h2 { 
+            color: var(--accent-color); 
+            margin-bottom: 25px; 
+            font-size: 1.8rem; 
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+        }
+
+        h3 { 
+            color: var(--header-color); 
+            margin-top: 25px; 
+            margin-bottom: 10px; 
+            font-size: 1.1rem; 
+        }
+        
+        .step-desc {
+            color: #bbb;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        /* Single Command Code Block */
+        .cmd-block {
+            display: flex;
+            align-items: center;
+            background-color: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            margin-bottom: 10px;
+            overflow: hidden;
+            transition: border-color 0.2s;
+        }
+
+        .cmd-block:hover {
+            border-color: var(--accent-color);
+        }
+
+        .cmd-number {
+            background-color: #222;
+            color: #555;
+            padding: 10px 15px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            user-select: none;
+        }
+
+        .cmd-content {
+            padding: 10px 15px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            color: #a5d6ff;
+            font-size: 0.95rem;
+            flex-grow: 1;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+
+        .copy-btn {
+            background-color: var(--copy-bg);
+            border: 1px solid transparent;
+            color: #aaa;
+            cursor: pointer;
+            padding: 10px 20px;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+            margin-left: auto;
+        }
+
+        .copy-btn:hover {
+            background-color: var(--copy-hover);
+            color: white;
+        }
+
+        /* Info & Error Boxes */
+        .note-box {
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+            font-size: 0.9rem;
+        }
+        .info {
+            background-color: var(--info-bg);
+            border-left: 4px solid var(--info-border);
+            color: #a5d6a7;
+        }
+        .error {
+            background-color: var(--warn-bg);
+            border-left: 4px solid var(--warn-border);
+            color: #ef9a9a;
+        }
+
+        /* Desktop File Config (Non-executable block) */
+        .config-box {
+            background-color: #1e1e1e;
+            padding: 15px;
+            border: 1px dashed #555;
+            border-radius: 6px;
+            font-family: monospace;
+            color: #ce9178;
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            margin-bottom: 15px;
+            user-select: all; /* Easy to select all text */
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            body { flex-direction: column; }
+            aside { width: 100%; height: auto; position: relative; border-right: none; padding-bottom: 20px;}
+            main { margin-left: 0; width: 100%; padding: 20px; }
+            .cmd-block { flex-direction: column; align-items: flex-start; }
+            .copy-btn { width: 100%; margin-top: 10px; border-radius: 0 0 6px 6px; text-align: center;}
+        }
+    </style>
+</head>
+<body>
+
+    <aside>
+        <h2>Dev Setup Guide</h2>
+        <input type="text" id="searchInput" class="nav-search" placeholder="Cari Aplikasi...">
+        <ul class="nav-links" id="navList">
+            <li><a href="#foundation">0. Foundation</a></li>
+            <li><a href="#git">1. Git</a></li>
+            <li><a href="#vscode">2. VS Code</a></li>
+            <li><a href="#android-studio">3. Android Studio</a></li>
+            <li><a href="#python">4. Python</a></li>
+            <li><a href="#golang">5. Golang</a></li>
+            <li><a href="#rust">6. Rust</a></li>
+            <li><a href="#nodejs">7. Node.js</a></li>
+            <li><a href="#php">8. PHP</a></li>
+            <li><a href="#composer">9. Composer</a></li>
+            <li><a href="#mysql">10. MySQL</a></li>
+            <li><a href="#phpmyadmin">11. phpMyAdmin</a></li>
+            <li><a href="#lampp">12. XAMPP (LAMPP)</a></li>
+            <li><a href="#docker">13. Docker</a></li>
+            <li><a href="#r-lang">14. R Language</a></li>
+            <li><a href="#flutter">15. Flutter</a></li>
+            <li><a href="#jupyter">16. Jupyter</a></li>
+            <li><a href="#postman">17. Postman</a></li>
+        </ul>
+    </aside>
+
+    <main>
+        <header>
+            <h1>Instalasi Langkah demi Langkah</h1>
+            <p>Panduan instalasi environment programming di Linux. <strong>1 Blok = 1 Perintah</strong>. Copy dan jalankan secara berurutan.</p>
+        </header>
+
+        <!-- 0. Foundation -->
+        <section id="foundation">
+            <h2>0. Foundation Tools</h2>
+            <p>Instalasi dasar yang wajib ada sebelum menginstall aplikasi lain (Compiler, Make, dll).</p>
+
+            <h3>1. Update Sistem</h3>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">sudo apt update && sudo apt upgrade -y</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+
+            <h3>2. Install Build Essential & Tools</h3>
+            <div class="note-box info">
+                Paket ini wajib untuk mengcompile kode C/C++ yang digunakan oleh Python, NodeJS, Rust, dll.
+            </div>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">sudo apt install build-essential git wget curl unzip software-properties-common apt-transport-https -y</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+        </section>
+
+        <!-- 1. Git -->
+        <section id="git">
+            <h2>1. Git</h2>
+            <h3>1. Install Git</h3>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">sudo apt install git -y</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+
+            <h3>2. Set Username Global</h3>
+            <span class="step-desc">Ganti "Nama Anda" dengan nama asli.</span>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">git config --global user.name "Nama Anda"</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+
+            <h3>3. Set Email Global</h3>
+            <span class="step-desc">Ganti dengan email GitHub/GitLab Anda.</span>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">git config --global user.email "email@anda.com"</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+        </section>
+
+        <!-- 2. VS Code -->
+        <section id="vscode">
+            <h2>2. Visual Studio Code</h2>
+            
+            <h3>1. Download GPG Key Microsoft</h3>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+
+            <h3>2. Install Key ke Sistem</h3>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">sudo install -o root -g root -m 644 packages.microsoft.gpg /etc/apt/trusted.gpg.d/</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+
+            <h3>3. Tambahkan Repository VSCode</h3>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">sudo sh -c 'echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/trusted.gpg.d/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" > /etc/apt/sources.list.d/vscode.list'</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+
+            <h3>4. Update & Install VSCode</h3>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">sudo apt update && sudo apt install code -y</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+        </section>
+
+        <!-- 3. Android Studio -->
+        <section id="android-studio">
+            <h2>3. Android Studio</h2>
+            <p>Metode manual tarball agar stabil dan terintegrasi menu.</p>
+
+            <h3>1. Masuk ke Folder Opt</h3>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">cd /opt</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+
+            <h3>2. Buat Folder Android Studio</h3>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">sudo mkdir android-studio && cd android-studio</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+
+            <h3>3. Download Installer</h3>
+            <span class="step-desc">Download versi terbaru stable.</span>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">sudo wget https://redirector.gvt1.com/edgedl/android/studio/ide-zips/2023.1.1.28/android-studio-2023.1.1.28-linux.tar.gz</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+
+            <h3>4. Ekstrak File</h3>
+            <span class="step-desc">Proses ini mungkin memakan waktu.</span>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">sudo tar -xvf android-studio-*.tar.gz --strip-components=1</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+
+            <h3>5. Bersihkan File Installer</h3>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">sudo rm android-studio-*.tar.gz</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+
+            <h3>6. Buat File Menu Launcher</h3>
+            <span class="step-desc">Perintah ini membuka editor teks.</span>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">sudo nano /usr/share/applications/android-studio.desktop</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+
+            <h3>7. Isi Konfigurasi</h3>
+            <div class="note-box info">
+                Copy teks di bawah ini (blok abu-abu), lalu Paste (Ctrl+Shift+V) ke dalam file Nano yang terbuka tadi.
+            </div>
+            <div class="config-box">[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Android Studio
+Icon=/opt/android-studio/bin/studio.png
+Exec="/opt/android-studio/bin/studio.sh" %f
+Comment=The IDE for Android
+Categories=Development;IDE;
+Terminal=false
+StartupWMClass=jetbrains-android-studio</div>
+
+            <h3>8. Simpan File Nano</h3>
+            <span class="step-desc">Tekan <code>Ctrl + X</code>, lalu tekan <code>Y</code>, lalu <code>Enter</code>.</span>
+
+            <h3>9. Beri Izin Eksekusi</h3>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">sudo chmod +x /usr/share/applications/android-studio.desktop</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+
+            <h3>10. Update Database Menu</h3>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">sudo update-desktop-database /usr/share/applications/</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+        </section>
+
+        <!-- 4. Python -->
+        <section id="python">
+            <h2>4. Python</h2>
+            <h3>1. Install Python 3 & Pip</h3>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">sudo apt install python3 python3-pip python3-venv -y</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+        </section>
+
+        <!-- 5. Golang -->
+        <section id="golang">
+            <h2>5. Golang</h2>
+            
+            <h3>1. Hapus Instalasi Lama (Jika ada)</h3>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">sudo rm -rf /usr/local/go</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+
+            <h3>2. Download Go (v1.21.5)</h3>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">wget https://go.dev/dl/go1.21.5.linux-amd64.tar.gz</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+
+            <h3>3. Ekstrak ke /usr/local</h3>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">sudo tar -C /usr/local -xzf go1.21.5.linux-amd64.tar.gz</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+
+            <h3>4. Tambahkan Path ke .bashrc</h3>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.bashrc</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+
+            <h3>5. Reload Configuration</h3>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">source ~/.bashrc</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+
+            <h3>6. Cek Versi</h3>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">go version</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+        </section>
+
+        <!-- 6. Rust -->
+        <section id="rust">
+            <h2>6. Rust</h2>
+            <h3>1. Download dan Jalankan Installer Rustup</h3>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+            <div class="note-box info">
+                Setelah perintah di atas berjalan, ketik angka <code>1</code> lalu Enter untuk melanjutkan instalasi default.
+            </div>
+
+            <h3>2. Reload Environment</h3>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">source ~/.cargo/env</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+        </section>
+
+        <!-- 7. Node JS -->
+        <section id="nodejs">
+            <h2>7. Node.js</h2>
+            <h3>1. Setup Repository NodeSource (Versi 20 LTS)</h3>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+
+            <h3>2. Install Node.js & NPM</h3>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">sudo apt install -y nodejs</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+        </section>
+
+        <!-- 8. PHP -->
+        <section id="php">
+            <h2>8. PHP</h2>
+            <h3>1. Install PHP 8.x + Ekstensi</h3>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">sudo apt install php php-fpm php-curl php-xml php-mysql php-mbstring php-zip php-bcmath php-intl -y</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+        </section>
+
+        <!-- 9. Composer -->
+        <section id="composer">
+            <h2>9. Composer</h2>
+            
+            <h3>1. Download Composer Installer</h3>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+
+            <h3>2. Install Composer Global</h3>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">sudo php composer-setup.php --install-dir=/usr/local/bin --filename=composer</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+
+            <h3>3. Hapus Installer</h3>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">php -r "unlink('composer-setup.php');"</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+        </section>
+
+        <!-- 10. MySQL -->
+        <section id="mysql">
+            <h2>10. MySQL</h2>
+            <h3>1. Install MySQL Server</h3>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">sudo apt install mysql-server -y</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+
+            <h3>2. Jalankan Secure Installation</h3>
+            <div class="note-box error">
+                Saat diminta VALIDATE PASSWORD COMPONENT, pilih <strong>N</strong> (No) agar tidak ribet.
+            </div>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">sudo mysql_secure_installation</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+        </section>
+
+        <!-- 11. phpMyAdmin -->
+        <section id="phpmyadmin">
+            <h2>11. phpMyAdmin</h2>
+            <h3>1. Install Paket</h3>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">sudo apt install phpmyadmin -y</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+            <div class="note-box info">
+                Pilih <strong>Apache2</strong>. Pilih <strong>Yes</strong> untuk dbconfig-common. Masukkan password.
+            </div>
+
+            <h3>2. Buat Symlink ke Apache</h3>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">sudo ln -s /usr/share/phpmyadmin /var/www/html/phpmyadmin</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+
+            <h3>3. Restart Apache</h3>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">sudo systemctl restart apache2</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+        </section>
+
+        <!-- 12. LAMPP -->
+        <section id="lampp">
+            <h2>12. XAMPP (LAMPP)</h2>
+            <h3>1. Download Installer XAMPP</h3>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">wget https://sourceforge.net/projects/xampp/files/XAMPP%20Linux/8.2.12/xampp-linux-x64-8.2.12-0-installer.run</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+
+            <h3>2. Beri Izin Eksekusi</h3>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">chmod 755 xampp-linux-x64-8.2.12-0-installer.run</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+
+            <h3>3. Jalankan Installer GUI</h3>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">sudo ./xampp-linux-x64-8.2.12-0-installer.run</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+
+            <h3>4. Buat Launcher Menu</h3>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">sudo nano /usr/share/applications/xampp-control-panel.desktop</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+
+            <h3>5. Isi Konfigurasi</h3>
+            <div class="config-box">[Desktop Entry]
+Version=1.0
+Type=Application
+Name=XAMPP Control Panel
+Exec=python3 /opt/lampp/manager-linux-x64.py
+Icon=/opt/lampp/htdocs/favicon.ico
+Terminal=false
+Categories=Development;</div>
+        </section>
+
+        <!-- 13. Docker -->
+        <section id="docker">
+            <h2>13. Docker</h2>
+            
+            <h3>1. Install Prerequisite</h3>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">sudo apt-get install ca-certificates curl gnupg -y</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+
+            <h3>2. Buat Folder Keyrings</h3>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">sudo install -m 0755 -d /etc/apt/keyrings</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+
+            <h3>3. Download Docker GPG Key</h3>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+
+            <h3>4. Atur Permission Key</h3>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">sudo chmod a+r /etc/apt/keyrings/docker.gpg</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+
+            <h3>5. Tambahkan Repository</h3>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+
+            <h3>6. Install Docker Engine</h3>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">sudo apt-get update && sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+
+            <h3>7. (Opsional) Menggunakan Docker tanpa Sudo</h3>
+            <span class="step-desc">Agar tidak perlu ketik sudo setiap kali menjalankan docker.</span>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">sudo groupadd docker</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">sudo usermod -aG docker $USER</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">newgrp docker</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+        </section>
+
+        <!-- 14. R Language -->
+        <section id="r-lang">
+            <h2>14. R Language</h2>
+            <h3>1. Tambah Repository CRAN</h3>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">sudo add-apt-repository "deb https://cloud.r-project.org/bin/linux/ubuntu $(lsb_release -cs)-cran40/"</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+
+            <h3>2. Tambahkan Secure Key</h3>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+
+            <h3>3. Install R Base</h3>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">sudo apt update && sudo apt install r-base r-base-dev -y</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+        </section>
+
+        <!-- 15. Flutter -->
+        <section id="flutter">
+            <h2>15. Flutter</h2>
+            <h3>1. Clone Flutter SDK</h3>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">cd ~ && git clone https://github.com/flutter/flutter.git -b stable --depth 1</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+
+            <h3>2. Tambahkan ke PATH</h3>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">echo 'export PATH="$PATH:$HOME/flutter/bin"' >> ~/.bashrc</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+
+            <h3>3. Reload Bash</h3>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">source ~/.bashrc</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+
+            <h3>4. Cek Status</h3>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">flutter doctor</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+        </section>
+
+        <!-- 16. Jupyter -->
+        <section id="jupyter">
+            <h2>16. Jupyter Notebook</h2>
+            <h3>1. Upgrade Pip</h3>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">pip install --upgrade pip</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+
+            <h3>2. Install Jupyter</h3>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">pip install jupyter</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+
+            <h3>3. Install Jupyter Lab (Opsional)</h3>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">pip install jupyterlab</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+        </section>
+
+        <!-- 17. Postman -->
+        <section id="postman">
+            <h2>17. Postman</h2>
+            
+            <h3>1. Download Postman</h3>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">wget https://dl.pstmn.io/download/latest/linux64 -O postman-linux-x64.tar.gz</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+
+            <h3>2. Ekstrak ke /opt</h3>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">sudo tar -xzf postman-linux-x64.tar.gz -C /opt</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+
+            <h3>3. Hapus File Download</h3>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">rm postman-linux-x64.tar.gz</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+
+            <h3>4. Buat Launcher Menu</h3>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">sudo nano /usr/share/applications/postman.desktop</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+
+            <h3>5. Isi Konfigurasi</h3>
+            <div class="config-box">[Desktop Entry]
+Encoding=UTF-8
+Name=Postman
+Exec=/opt/Postman/Postman
+Icon=/opt/Postman/app/resources/app/assets/icon.png
+Terminal=false
+Type=Application
+Categories=Development;
+MimeType=text/plain</div>
+
+            <h3>6. Update Database Menu</h3>
+            <div class="cmd-block">
+                <span class="cmd-number">$</span>
+                <code class="cmd-content">sudo update-desktop-database</code>
+                <button class="copy-btn">Copy</button>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // 1. Search Functionality
+        const searchInput = document.getElementById('searchInput');
+        const sections = document.querySelectorAll('section');
+        const navLinks = document.querySelectorAll('.nav-links a');
+
+        searchInput.addEventListener('keyup', (e) => {
+            const term = e.target.value.toLowerCase();
+
+            sections.forEach(section => {
+                const title = section.querySelector('h2').innerText.toLowerCase();
+                const content = section.innerText.toLowerCase();
+
+                if (title.includes(term) || content.includes(term)) {
+                    section.style.display = 'block';
+                } else {
+                    section.style.display = 'none';
+                }
+            });
+
+            navLinks.forEach(link => {
+                const text = link.innerText.toLowerCase();
+                const targetId = link.getAttribute('href').substring(1);
+                const targetSection = document.getElementById(targetId);
+
+                if (text.includes(term) || (targetSection && targetSection.style.display !== 'none')) {
+                    link.parentElement.style.display = 'block';
+                } else {
+                    link.parentElement.style.display = 'none';
+                }
+            });
+        });
+
+        // 2. Copy Functionality
+        document.querySelectorAll('.copy-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Find the sibling element with class 'cmd-content'
+                const code = btn.parentElement.querySelector('.cmd-content').innerText;
+                
+                navigator.clipboard.writeText(code).then(() => {
+                    const originalText = btn.innerText;
+                    btn.innerText = 'Copied!';
+                    btn.style.backgroundColor = 'var(--accent-color)';
+                    btn.style.color = 'white';
+                    
+                    setTimeout(() => {
+                        btn.innerText = originalText;
+                        btn.style.backgroundColor = '';
+                        btn.style.color = '';
+                    }, 1500);
+                });
+            });
+        });
+
+        // 3. Smooth Scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if(target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                    
+                    // Set active link
+                    document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+                    this.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
